@@ -1,16 +1,41 @@
 """
-危险命令审计规则
-- 每条规则:(name, level, pattern)
+Dangerous command audit rules.
+
+Each rule is a tuple of (name, level, pattern):
+- name: unique rule identifier
 - level: "warn" | "critical"
-- pattern: 正则
+- pattern: regex (compiled with re.search)
 """
 import re
 from typing import List, Tuple, Optional
 
-# level: critical = 必须人工 review, warn = 注意
+# level: critical = requires immediate human review, warn = attention needed
 
 DEFAULT_RULES: List[Tuple[str, str, str]] = [
-    # 删库级 —— rm -rf 后面跟根、家目录、或任何绝对路径
+    # ============================================================
+    # sudo / privilege escalation — highest priority
+    # After sudo -i/-s/su, the new shell runs outside audit scope.
+    # ============================================================
+    ("sudo_root_shell", "critical",
+     r"\bsudo\s+(-i|--login|-s)\b"),
+    ("sudo_su", "critical",
+     r"\bsudo\s+su\b"),
+    ("sudo_visudo", "critical",
+     r"\bsudo\s+visudo\b"),
+    ("sudo_rm_rf", "critical",
+     r"\bsudo\s+rm\s+-\w*r\w*\s+/(\s|$|;|\||&|'|\")"),
+    ("sudo_edit_auth", "critical",
+     r"\bsudo\s+(vim?|nano|emacs|tee)\s+/etc/(passwd|shadow|sudoers|ssh/sshd_config)\b"),
+    ("sudo_dd", "critical",
+     r"\bsudo\s+dd\s+.*\bof=/dev/"),
+    ("sudo_systemctl", "warn",
+     r"\bsudo\s+systemctl\s+(stop|restart|disable|mask|reboot|poweroff)\b"),
+    ("sudo_iptables", "warn",
+     r"\bsudo\s+iptables\s"),
+
+    # ============================================================
+    # file-system destruction
+    # ============================================================
     ("rm_rf_root", "critical",
      r"\brm\s+-\w*r\w*\s+/(\s|$|;|\||&|'|\")"),
     ("rm_rf_home", "critical",
@@ -25,25 +50,33 @@ DEFAULT_RULES: List[Tuple[str, str, str]] = [
     ("chown_recursive_root", "critical",
      r"\bchown\s+(-R\s+)?\S+\s+/\s*($|;|\||&|'|\")"),
 
-    # 远程脚本执行
+    # ============================================================
+    # remote script execution
+    # ============================================================
     ("pipe_to_shell", "critical",
      r"(curl|wget)\s+[^|]*\|\s*(ba)?sh"),
 
-    # 服务影响
+    # ============================================================
+    # service impact
+    # ============================================================
     ("system_reboot", "warn",
      r"\b(reboot|shutdown|halt|poweroff|init\s+[06]|systemctl\s+(reboot|poweroff))\b"),
     ("disable_sshd", "critical",
      r"\b(systemctl\s+(stop|disable|mask)\s+ssh(\.service)?|service\s+ssh(d)?\s+stop)\b"),
     ("firewall_flush", "warn", r"\biptables\s+-F\b"),
 
-    # 账号/凭据
+    # ============================================================
+    # account / credential management
+    # ============================================================
     ("passwd_change", "warn", r"(^|\s|;)passwd\b"),
     ("user_mgmt", "warn",
      r"\b(useradd|userdel|usermod|groupadd|groupdel|groupmod)\b"),
     ("edit_passwd_files", "critical",
      r"(>|>>|tee\s+|sed\s+-i.*|(^|\s)(vim?|nano|emacs)\s+)/etc/(passwd|shadow|sudoers|ssh/sshd_config)\b"),
 
-    # 清痕迹
+    # ============================================================
+    # covering tracks
+    # ============================================================
     ("history_clear", "warn",
      r"(\bhistory\s+-c\b|>\s*~/\.bash_history|\brm\s+.*\.bash_history)"),
 ]
