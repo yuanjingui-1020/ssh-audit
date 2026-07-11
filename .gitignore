@@ -1,3 +1,7 @@
+# ── 嵌入式 Python 运行时（首次clone用户需要，后续不重新上传） ──
+python/
+wheels/
+
 # ── 凭据与敏感信息 ──
 credentials.txt
 
