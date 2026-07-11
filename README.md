@@ -55,6 +55,20 @@ python\python.exe bin\agent-ssh-shell.py user@host --password-base64 $pw
 
 ---
 
+## 执行流程
+
+![执行流程图](执行流程图.png)
+
+整体工作流说明：
+
+1. **凭据管理** — 通过 `agent-ssh-cred.py` 用 Windows DPAPI 加密存储密码
+2. **命令执行** — `agent-ssh-run.py` 或 `agent-ssh-shell.py` 发起 SSH 连接
+3. **审计检查** — 每条命令经过 14 条安全规则检测，命中即告警并记录
+4. **日志归档** — JSONL 格式审计日志 + Markdown 命令学习日志双通道
+5. **会话回放** — 通过 `agent-ssh-replay.py` 随时查看历史操作
+
+---
+
 ## 目录结构
 
 ```
