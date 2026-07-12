@@ -7,6 +7,7 @@ credentials.txt
 # ===== 运行时日志 =====
 logs/
 sessions/
+cmds_learn/
 
 # ===== Python 缓存 =====
 __pycache__/
@@ -26,3 +27,6 @@ wheels/
 *~
 .DS_Store
 Thumbs.db
+
+# ===== 审计索引文件 =====
+index.jsonl

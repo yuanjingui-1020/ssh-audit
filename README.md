@@ -296,3 +296,30 @@ ssh-audit/
 - 即使 `credentials.txt` 泄露，脱离加密时的用户会话无法解密
 - 禁止在脚本/回复中展示明文密码
 - 所有 SSH 操作强制走审计通道，禁止裸 `paramiko`/`subprocess ssh`
+
+---
+
+## 文件编码规范
+
+本项目所有文本文件统一使用 **UTF-8 编码，不带 BOM**。
+
+### ⚠️ PowerShell 写文件注意事项
+
+```powershell
+# ✅ 正确：WriteAllText 无 BOM
+[System.IO.File]::WriteAllText("cmds.txt", $content)
+
+# ✅ 正确：Set-Content 无 BOM
+$content | Set-Content "cmds.txt" -Encoding UTF8
+
+# ❌ 错误：Out-File 会加 UTF-8 BOM（BOM 会导致 Shell 命令解析错误）
+$content | Out-File "cmds.txt"       # ❌ BOM
+$content | Out-File "cmds.txt" -Encoding UTF8  # ❌ 仍有 BOM
+```
+
+### AI 智能体操作规范
+
+AI 在修改或创建任何文件时，必须：
+1. 使用 UTF-8（无 BOM）编码，不得使用 GBK、UTF-16 等其他编码
+2. Python 代码显式指定 `encoding="utf-8"`，禁止依赖系统默认编码
+3. 乱码文件不得提交到 Git

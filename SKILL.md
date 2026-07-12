@@ -180,6 +180,48 @@ python -c "import paramiko, cryptography; print('SSH审计环境就绪')"
 
 ---
 
+## 文件编码规范
+
+本项目所有文本文件（代码、文档、配置文件）**统一使用 UTF-8 编码，不带 BOM**。
+
+### AI 智能体操作规范
+
+AI 在修改或创建任何文件时，必须遵守以下规则：
+
+1. **写入文件时**：必须使用 UTF-8（无 BOM）编码，**不得**使用 GBK、GB2312、UTF-16 或其他编码。
+2. **PowerShell 写文件**：禁止使用 `Out-File`（默认会加 UTF-8 BOM）；改用 `Set-Content`、`[IO.File]::WriteAllText` 或 Python 文件写入。
+3. **读取文件时**：Python 代码应显式指定 `encoding="utf-8"`，避免依赖系统默认编码。
+4. **Git 提交前**：检查文件编码是否正确，乱码文件不得提交到 Git。
+
+### PowerShell 正确写文件示例
+
+```powershell
+# ✅ 正确：WriteAllText 默认无 BOM
+[System.IO.File]::WriteAllText("cmds.txt", $content)
+
+# ✅ 正确：Set-Content 默认无 BOM
+$content | Set-Content "cmds.txt" -Encoding UTF8
+
+# ❌ 错误：Out-File 会加 UTF-8 BOM
+$content | Out-File "cmds.txt"          # ❌ BOM
+$content | Out-File "cmds.txt" -Encoding UTF8  # ❌ 仍有 BOM
+```
+
+### Python 正确读写文件
+
+```python
+# ✅ 正确：显式 UTF-8，无 BOM
+Path("cmds.txt").write_text(content, encoding="utf-8")
+
+# ❌ 错误：依赖系统默认编码（Windows 上可能是 GBK）
+Path("cmds.txt").write_text(content)  # ❌ 默认编码不可控
+
+# ✅ 正确：批量命令文件读取
+cmds = Path(batch_file).read_text(encoding="utf-8").splitlines()
+```
+
+---
+
 ## 日志规则
 
 ### 审计日志（JSONL，已加密）
