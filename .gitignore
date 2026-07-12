@@ -1,24 +1,24 @@
-# ── 嵌入式 Python 运行时（首次clone用户需要，后续不重新上传） ──
+# ===== 嵌入式 Python 运行时（首次 clone 用户需自行安装，后续不重新上传）=====
 python/
-wheels/
 
-# ── 凭据与敏感信息 ──
+# ===== 凭据与隐私信息 =====
 credentials.txt
 
-# ── 运行时日志 ──
+# ===== 运行时日志 =====
 logs/
 sessions/
 
-# ── Python 缓存 ──
+# ===== Python 缓存 =====
 __pycache__/
 *.pyc
 *.pyo
 
-# ── 打包产物 ──
+# ===== 打包产物 =====
+wheels/
 *.zip
 *.whl
 
-# ── 编辑器和系统文件 ──
+# ===== 编辑器和系统文件 =====
 .vscode/
 .idea/
 *.swp
