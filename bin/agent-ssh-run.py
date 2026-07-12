@@ -184,6 +184,13 @@ def main():
                 # 批量命令逐条写入学习日志
                 for cmd in cmds:
                     _log_executed_cmd(cmd, user, host, sid)
+                # 批量命令逐条输出，stderr 加序号前缀方便追溯
+                for i, r in enumerate(results, 1):
+                    if r.stdout:
+                        sys.stdout.write(r.stdout_text)
+                    if r.stderr:
+                        for line in r.stderr_text.splitlines():
+                            sys.stderr.write(f"[stderr:{i}] {line}\n")
                 any_err = any(r.exit_code != 0 for r in results)
                 sys.exit(1 if any_err else 0)
 
